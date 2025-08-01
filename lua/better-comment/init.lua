@@ -79,7 +79,11 @@ M.setup = function(config)
 
             for id, comment in ipairs(comments) do
                 for hl_id, hl in ipairs(opts.tags) do
-                    if string.find(comment.text, hl.name) then
+                    -- local comment_chars = string.find(comment.text, "^%S+") or "" -- Can't do strikethrough on double-commented lines (I think) because tree-sitter sees the same line as two different comments; can't detect double comments properly, not spend time on this.
+
+                    -- match whatever comment character sequence (assuming it's space separated), and then an optional space after 
+                    -- it with the tag name. This prevents highlighting a comment unintentionally with a hyperlink or something similar
+                    if string.match(comment.text, "^%S+%s*" .. hl.name) then
                         local ns_id = vim.api.nvim_create_namespace(hl.name)
                         if hl.virtual_text and hl.virtual_text ~= "" then
                             local v_opts = {
