@@ -20,9 +20,11 @@ use "Sargates/better-comments.nvim"
 ```lua
 return {
     "Sargates/better-comments.nvim",
-    opts = {} -- See "How to overwrite defaults" for what to put here
+    opts = {}                            -- See "How to overwrite defaults" for what to put here
     -- OR
-    require("better-comments").setup{}
+    config = function()
+      require("better-comments").setup{} -- See above comment
+    end
 }
 ```
 
