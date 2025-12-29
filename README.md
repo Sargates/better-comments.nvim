@@ -1,88 +1,93 @@
 # Better Comments - NVIM
 Better comments helps you to organize your comments with highlights and virtual text.
 
-# DEMO
-![Demo](https://github.com/Djancyp/nvim-plugin-demo/blob/main/better-comment.nvim/images/example.png)
+
+## Example
+![](images/demo.png)
+> Additionally, the space between the comment delimiter and the tag is not necessary; `//TODO`, `//!`, `//?`, etc. are valid, but see [quirks](#quirks) for more info on this style
+
 ## Installation
-### Requirement
-in order to use this plugin you need to set up treesiter
+### Dependencies
+In order to use this plugin you need to set up [Tree-sitter](https://github.com/nvim-treesitter/nvim-treesitter)
 
-[nvim-treesitter/nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter)
-
-Recommended Packer:
-
+### Packer:
 ```lua
-use "Djancyp/better-comments.nvim"
+use "Sargates/better-comments.nvim"
 ```
-### Setup
+> I don't use packer, this is taken verbatim from the forked repo
+
+### Lazy
 ```lua
-require('better-comment').Setup()
+return {
+    "Sargates/better-comments.nvim",
+    opts = {} -- See "How to overwrite defaults" for what to put here
+    -- OR
+    require("better-comments").setup{}
+}
 ```
 
-## Configs
+## Configuration
 ### Default Config
 ```lua
-tags = {
-        {
-            name = "TODO",
-            fg = "white",
-            bg = "#0a7aca",
-            bold = true,
-            virtual_text = "",
-        },
-        {
-            name = "FIX",
-            fg = "white",
-            bg = "#f44747",
-            bold = true,
-            virtual_text = "This is virtual Text from FIX",
-        },
-        {
-            name = "WARNING",
-            fg = "#FFA500",
-            bg = "",
-            bold = false,
-            virtual_text = "This is virtual Text from WARNING",
-        },
-        {
-            name = "!",
-            fg = "#f44747",
-            bg = "",
-            bold = true,
-            virtual_text = "",
-        }
+{
+    tags = {
+        { name = "TODO",      -- Case-sensitive name for tag
+          fg = "#ff8c00",     -- Foreground (text-color) of comment color
+          bg = "none",        -- Background (highlight) of comment color
+          bold = false,       -- Whether to bold comment or not
+          underline = true }, -- Whether to underline comment or not
 
+        { name = "!",
+          fg = "#ff2d00" },
+
+        { name = "?",
+          fg = "#3498db" },
+
+        { name = "*",
+          fg = "#FFED29" },
+
+        { name = "//",        -- Flair for double-commenting
+          fg = "#474747" },   -- change depending on your color scheme
+
+        { name = "WARN",      -- also matches "WARNING"
+          fg = "#FFA500" }
+    },
+    queries = {
+        -- Rust's treesitter parser doesn't use the `comment` node, so we 
+        -- need to the selector with something that will be found
+        ["rust"] = "(line_comment) @all",
+        ["default"] = "(comment) @all"
     }
+}
 ```
-### Overwrite defaults or add new Config
-```lua
-require('better-comment').Setup({
-tags = {
-       // TODO will overwrite
-        {
-            name = "TODO",
-            fg = "white",
-            bg = "#0a7aca",
-            bold = true,
-            virtual_text = "",
-        },
-       {
-            name = "NEW",
-            fg = "white",
-            bg = "red",
-            bold = false,
-            virtual_text = "",
-        },
 
-    }
+### How to overwrite defaults or adding new tags
+```lua
+require('better-comments').setup({
+    tags = { --[[ Paste default config here and edit ]] }
 })
 ```
+```lua
+require('better-comments').setup({
+    tags = {} -- DO NOT SET THIS TO AN EMPTY TABLE. 
+              -- This will cause every tag to get overwritten
+})
+```
+
+## Quirks
+There are a few quirks with this plugin, but nothing that prevents it from working completely (atleast that I know of).
+For example, sometimes highlighting is finicky depending on the language. With Rust, the Tree-sitter parser uses the `line_comment` node instead of the `comment` node. This causes weird behavior when not separating comment delimiter and the tag identifier with a space, but only for the `!` tag.
+
+Both of these screenshots were taken right after opening this file. \
+The `!`-prefixed comment is not highlighted if there is no space between the tag and the comment delimiter: \
+![](images/quirk1.png) \
+![](images/quirk2.png)
+
 
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
 Please make sure to update tests as appropriate.
 
 ## License
-[MIT](https://choosealicense.com/licenses/mit/)
+[MIT](https://opensource.org/license/mit)
