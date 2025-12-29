@@ -1,5 +1,3 @@
--- TODO: don't having to resave to remove extmark
--- TODO: see the others TODO
 
 
 local M = {}
@@ -51,13 +49,25 @@ M.setup = function(config)
                 return
             end
             local fileType = api.nvim_buf_get_option(current_buffer, "filetype")
+
+            -- Some treesitter parsers don't use `comment` but because `treesitter.query.parse` is "strict", 
+            -- it fails if any selector that's passed is not found, so we can't actually pass `[[(line_comment) @all (comment) @all]]` 
+            -- because it is guaranteed to fail. so we make a LUT for hardcoded language parsers instead.
+            local chosen_selector = ""
+            local queries = {
+                ["rust"] = "(line_comment) @all",
+                ["default"] = "(comment) @all"
+            }
+
+            chosen_selector = queries[fileType] ~= nil and queries[fileType] or queries["default"]
+
             local success, parsed_query = pcall(function()
-                return treesitter.query.parse(fileType, [[(comment) @all]])
+                return treesitter.query.parse(fileType, chosen_selector)
             end)
             if not success then
                 return
             end
-            local commentsTree = treesitter.query.parse(fileType, [[(comment) @all]])
+            local commentsTree = treesitter.query.parse(fileType, chosen_selector)
 
             -- FIX: Check if file has treesitter
             local root = Get_root(current_buffer, fileType)
@@ -79,7 +89,7 @@ M.setup = function(config)
 
             for id, comment in ipairs(comments) do
                 for hl_id, hl in ipairs(opts.tags) do
-                    -- local comment_chars = string.find(comment.text, "^%S+") or "" -- Can't do strikethrough on double-commented lines (I think) because tree-sitter sees the same line as two different comments; can't detect double comments properly, not spend time on this.
+                    -- local comment_chars = string.find(comment.text, "^%S+") or "" -- Can't do strikethrough on double-commented lines (I think) because tree-sitter sees the same line as two different comments; can't detect double comments properly, not spending time on this.
 
                     -- match whatever comment character sequence (assuming it's space separated), and then an optional space after 
                     -- it with the tag name. This prevents highlighting a comment unintentionally with a hyperlink or something similar
@@ -96,7 +106,7 @@ M.setup = function(config)
                             -- FIX: comment.line -> 0 in col
                             api.nvim_buf_set_extmark(current_buffer, ns_id, comment.line, 0, v_opts)
                         end
-                        
+
                         -- FIX: using for ns_id ns_id instead of 0 
                         -- so that when we clear the namespace the color also clear
                         vim.api.nvim_buf_add_highlight(current_buffer, ns_id, tostring(hl_id), comment.line,
@@ -104,11 +114,11 @@ M.setup = function(config)
                             comment.finish)
                     else
                         -- FIX: added else to delted extmark
-                        
+
                         -- TODO: THIS PART IS CALLED A LOT FIND A WAY TO NOT CHECK EVERY TIME
                         if hl.virtual_text ~= "" then
                             local ns_id = vim.api.nvim_create_namespace(hl.name)
-                            
+
                             -- FIX: clearing the namespace to delete the extmark and the color 
                             api.nvim_buf_clear_namespace(current_buffer, ns_id, comment.line, comment.line+1)
                         end
