@@ -1,5 +1,3 @@
-
-
 local M = {}
 
 local api = vim.api
@@ -7,37 +5,30 @@ local cmd = vim.api.nvim_create_autocmd
 local treesitter = vim.treesitter
 local opts = {
     tags = {
-        {
-            name = "TODO",
-            fg = "white",
-            bg = "#0a7aca",
-            bold = true,
-        },
-        {
-            name = "FIX",
-            fg = "white",
-            bg = "#f44747",
-            bold = true,
-        },
-        {
-            name = "WARNING",
-            fg = "#FFA500",
-            bold = false,
-        },
-        {
-            name = "!",
-            fg = "#f44747",
-            bold = true,
-        }
-
+        { name = "TODO",
+          fg = "#ff8c00",
+          underline = true },
+        { name = "!",
+          fg = "#ff2d00" },
+        { name = "?",
+          fg = "#3498db" },
+        { name = "*",
+          fg = "#FFED29" },
+        { name = "//",
+          fg = "#474747" },
+        { name = "WARN",
+          fg = "#FFA500" }
     },
+    queries = {
+        ["rust"] = "(line_comment) @all",
+        ["default"] = "(comment) @all"
+    }
 }
 
 
 M.setup = function(config)
-    if config and config.tags then
-        opts.tags = config.tags
-    end
+    if config and config.tags then opts.tags = config.tags end
+    if config and config.queries then opts.queries = config.queries end
 
     local augroup = vim.api.nvim_create_augroup("better-comments", {clear = true})
     cmd({ 'BufWinEnter', 'BufFilePost', 'BufWritePost', 'TextChanged', 'TextChangedI'  }, {
@@ -52,14 +43,9 @@ M.setup = function(config)
 
             -- Some treesitter parsers don't use `comment` but because `treesitter.query.parse` is "strict", 
             -- it fails if any selector that's passed is not found, so we can't actually pass `[[(line_comment) @all (comment) @all]]` 
-            -- because it is guaranteed to fail. so we make a LUT for hardcoded language parsers instead.
+            -- because it is guaranteed to fail. So we make a LUT for hardcoded language parsers instead. This is exposed to options
             local chosen_selector = ""
-            local queries = {
-                ["rust"] = "(line_comment) @all",
-                ["default"] = "(comment) @all"
-            }
-
-            chosen_selector = queries[fileType] ~= nil and queries[fileType] or queries["default"]
+            chosen_selector = opts.queries[fileType] ~= nil and opts.queries[fileType] or opts.queries["default"]
 
             local success, parsed_query = pcall(function()
                 return treesitter.query.parse(fileType, chosen_selector)
@@ -138,9 +124,9 @@ end
 function Create_hl(list)
     for id, hl in ipairs(list) do
         vim.api.nvim_set_hl(0, tostring(id), {
-            fg = hl.fg,
-            bg = hl.bg,
-            bold = hl.bold,
+            fg = hl.fg ~= nil and hl.fg or "#FFFFFF", -- default to White
+            bg = hl.bg ~= nil and hl.bg or "none",
+            bold = hl.bold ~= nil and hl.bold or false,
             underline = hl.underline,
         })
     end
