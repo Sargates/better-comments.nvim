@@ -37,7 +37,7 @@ return {
           bold = false,       -- Whether to bold comment or not
           underline = true }, -- Whether to underline comment or not
 
-        { name = "!",
+        { name = "!",         -- The fields `bg`, `bold`, and `underline` have defaults, so they don't need to be manually specified
           fg = "#ff2d00" },
 
         { name = "?",
