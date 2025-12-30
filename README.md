@@ -1,10 +1,11 @@
 # Better Comments - NVIM
 Better comments helps you to organize your comments with highlights and virtual text.
+> All credits to the original author
 
 
 ## Example
 ![](images/demo.png)
-> Additionally, the space between the comment delimiter and the tag is not necessary; `//TODO`, `//!`, `//?`, etc. are valid, but see [quirks](#quirks) for more info on this style
+> Additionally, the space between the comment delimiter and the tag is not necessary; `//TODO`, `//!`, `//?`, etc. are valid, as seen on the last line. See [quirks](#quirks) for more info on this style
 
 ## Installation
 ### Dependencies
@@ -39,8 +40,8 @@ return {
           bold = false,       -- Whether to bold comment or not
           underline = true }, -- Whether to underline comment or not
 
-        { name = "!",         -- The fields `bg`, `bold`, and `underline` have defaults, so they don't need to be manually specified
-          fg = "#ff2d00" },
+        { name = "!",         -- The fields `bg`, `bold`, and `underline` have 
+          fg = "#ff2d00" },   -- defaults, so they don't need to be manually specified
 
         { name = "?",
           fg = "#3498db" },
@@ -48,15 +49,15 @@ return {
         { name = "*",
           fg = "#FFED29" },
 
-        { name = "//",        -- Flair for double-commenting
+        { name = "//",        -- Optional coloring for double-commenting
           fg = "#474747" },   -- change depending on your color scheme
 
         { name = "WARN",      -- also matches "WARNING"
           fg = "#FFA500" }
     },
     queries = {
-        -- Rust's treesitter parser doesn't use the `comment` node, so we 
-        -- need to the selector with something that will be found
+        -- Rust's tree-sitter parser doesn't use the `comment` node, so we 
+        -- need to set the selector with something that will be found
         ["rust"] = "(line_comment) @all",
         ["default"] = "(comment) @all"
     }
